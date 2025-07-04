@@ -1,0 +1,179 @@
+:root {
+  --primary-blue: #007bff;
+}
+
+.main-container {
+  background-color: white;
+  min-height: 100vh;
+  padding: 20px;
+  color: #000;
+}
+
+.navbar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.navbar button {
+  background: #ffffff;
+  color: #000;
+  border: 1px solid #ccc;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.header h1,
+.profile-section h1,
+.stats-section h1 {
+  font-size: 3.5rem;
+  font-weight: bold;
+  letter-spacing: -1px;
+  color: #000;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+}
+
+.header h1 span:last-child,
+.profile-section h1 span:last-child,
+.stats-section h1 span:last-child {
+  color: var(--primary-blue);
+}
+
+.logo {
+  max-width: 180px;
+  margin-bottom: 10px;
+}
+
+.tagline {
+  font-size: 2rem;
+  font-style: italic;
+  text-align: center;
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-heading {
+  text-align: center;
+  color: var(--primary-blue);
+  font-size: 2rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.intro {
+  font-size: 1.2rem;
+  max-width: 90%;
+  margin: 0 auto 40px auto;
+}
+
+.intro p, .intro ul {
+  text-align: left;
+  line-height: 1.8;
+}
+
+.profile-section, .stats-section {
+  text-align: center;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 2px solid #ccc;
+}
+
+.profile-section input {
+  margin: 8px 10px;
+  padding: 10px;
+  width: 200px;
+}
+
+.upload-buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.upload-buttons button {
+  margin: 0 10px;
+  background-color: var(--primary-blue);
+  color: white;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.job-search-bar {
+  width: 80%;
+  padding: 16px;
+  margin: 20px auto;
+  display: block;
+  font-size: 1.2rem;
+}
+
+.swipe-instructions {
+  text-align: center;
+  font-style: italic;
+  font-size: 1rem;
+  margin-bottom: 16px;
+}
+
+.saved-jobs {
+  text-align: center;
+  margin-top: 32px;
+}
+
+.matched-jobs-page {
+  padding: 20px;
+  margin-top: 32px;
+}
+
+.matched-job-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  list-style: none;
+  padding: 0;
+}
+
+.matched-job-list li {
+  background-color: #f1f1f1;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.stats-section ul,
+.stats-section ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.stats-section p {
+  font-size: 1.7rem;
+  font-style: italic;
+  margin: 1.2rem auto;
+  text-align: center;
+  color: #333;
+  max-width: 700px;
+  line-height: 1.5;
+}
+
+.matched-job-list li button {
+  background-color: var(--primary-blue);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  margin-top: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
