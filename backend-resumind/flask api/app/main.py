@@ -5,7 +5,7 @@ from pymongo import MongoClient
 import openpyxl
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
-import app.preprocessing_module as preprocessing_module
+import preprocessing_module as preprocessing_module
 import boto3, sagemaker
 from sagemaker.huggingface import HuggingFaceModel
 
@@ -27,10 +27,10 @@ except OSError:
 
 #sagemaker
 try:
-	role = sagemaker.get_execution_role()
+	role = "arn:aws:iam::695911679772:role/sagemaker-execution-role"
 except ValueError:
 	iam = boto3.client('iam')
-	role = iam.get_role(RoleName='sagemaker_execution_role')['Role']['Arn']
+	role = "arn:aws:iam::695911679772:role/sagemaker-execution-role"
 #hugging face hub config
 hub = {
 	'HF_MODEL_ID':'sarahwierzbicki/results',
@@ -46,7 +46,7 @@ huggingface_model = HuggingFaceModel(
 # deploy model to SageMaker Inference
 predictor = huggingface_model.deploy(
 	initial_instance_count=1, # number of instances
-	instance_type='ml.m5.xlarge' # ec2 instance type
+	instance_type='ml.t2.medium' # ec2 instance type
 )
 
 #process resume
@@ -83,7 +83,7 @@ def process_resume():
 
 #read job excel file
 excel_file = "jobpostingsfinalcsv.xlsx"
-job_data_path = os.path.join(app.root_path, 'data', "jobpostingsfinalcsv.xlsx")
+job_data_path = "../data/jobpostingsfinalcsv.xlsx"
 df_jobs = pd.read_excel(job_data_path, engine='openpyxl')
 
 

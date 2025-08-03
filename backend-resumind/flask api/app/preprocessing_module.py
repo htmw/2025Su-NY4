@@ -3,8 +3,6 @@
 from pypdf import PdfReader
 from docx import Document
 import spacy
-import numpy as np
-import pandas as pd
 import re
 
 #file upload from user
