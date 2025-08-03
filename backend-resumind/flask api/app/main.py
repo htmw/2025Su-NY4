@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import os, json, uuid, spacy
 import pandas as pd
 from pymongo import MongoClient
+import openpyxl
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import app.preprocessing_module as preprocessing_module
@@ -80,10 +81,10 @@ def process_resume():
     collection.insert_one(resume_data)
     #resume text will be returned and stored 
 
-#load job csv
-job_data_path = os.getenv('backend-resumind/flask api/data/jobpostingsfinalcsv.xlsx', "jobpostingsfinalcsv.xlsx")
-#adjust path as needed will be local compress for github
-df_jobs = pd.read_excel(job_data_path)
+#read job excel file
+excel_file = "jobpostingsfinalcsv.xlsx"
+job_data_path = os.path.join(app.root_path, 'data', "jobpostingsfinalcsv.xlsx")
+df_jobs = pd.read_excel(job_data_path, engine='openpyxl')
 
 
 #route for prediction
@@ -114,3 +115,4 @@ def predict_category():
 #run flask
 if __name__ == '__main__':
     app.run(debug=True)
+
