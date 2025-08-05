@@ -9,58 +9,67 @@ import preprocessing_module as preprocessing_module
 import boto3, sagemaker
 from sagemaker.huggingface import HuggingFaceModel
 
+print("THIS IS THE RIGHT FILE.")
 
 app = Flask(__name__)
+# app.run(host='0.0.0.0', port=5000, debug=True)
 
-#mongodb connection
-client = MongoClient(os.getenv('mongodb://localhost:27017/'))
-db = client.get_database['resume_db']
+# print("Registered routes:")
+# for rule in app.url_map.iter_rules():
+#    print(rule)
+
+
+# mongodb connection
+client = MongoClient('mongodb://localhost:27017/')
+db = client.get_database('resume_db')
 collection = db['data']
 
-#load spacy model
+# load spacy model
 try:
-    nlp = spacy.load("en_core_web_sm")  
+    nlp = spacy.load("en_core_web_sm")
 except OSError:
     print("SpaCy model 'en_core_web_sm' not found. Downloading...")
     spacy.cli.download("en_core_web_sm")
     nlp = spacy.load("en_core_web_sm")
 
-#sagemaker
+# sagemaker
 try:
-	role = "arn:aws:iam::695911679772:role/sagemaker-execution-role"
+    role = "arn:aws:iam::695911679772:role/sagemaker-execution-role"
 except ValueError:
-	iam = boto3.client('iam')
-	role = "arn:aws:iam::695911679772:role/sagemaker-execution-role"
-#hugging face hub config
+    iam = boto3.client('iam')
+    role = "arn:aws:iam::695911679772:role/sagemaker-execution-role"
+# hugging face hub config
 hub = {
-	'HF_MODEL_ID':'sarahwierzbicki/results',
-	'HF_TASK':'text-classification'
+    'HF_MODEL_ID': 'sarahwierzbicki/results',
+    'HF_TASK': 'text-classification'
 }
 huggingface_model = HuggingFaceModel(
-	transformers_version='4.49.0',
-	pytorch_version='2.6.0',
-	py_version='py312',
-	env=hub,
-	role=role, 
-)
-# deploy model to SageMaker Inference
-predictor = huggingface_model.deploy(
-	initial_instance_count=1, # number of instances
-	instance_type='ml.t2.medium' # ec2 instance type
+    transformers_version='4.49.0',
+    pytorch_version='2.6.0',
+    py_version='py312',
+    env=hub,
+    role=role,
 )
 
-#process resume
-@app.route('/process_resume', methods=['POST'])
-def process_resume():
+
+# deploy model to SageMaker Inference
+# predictor = huggingface_model.deploy(
+#	initial_instance_count=1, # number of instances
+#	instance_type='ml.t2.medium' # ec2 instance type
+# )
+
+# process resume
+@app.route('/process-resume', methods=['POST'])
+def handle_process_resume():
     if 'file' not in request.files:
         return jsonify({'error': "No file"}), 400
-    
+
     file = request.files['file']
 
     if file:
         filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
+        #       file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        #      file.save(file_path)
 
         resume_text = ""
         if filename.lower().endswith('.pdf'):
@@ -73,22 +82,23 @@ def process_resume():
         os.remove(file_path)
 
         return jsonify({resume_text}), 200
-    #create random unique resumeid
-    resume_id = str(uuid.uuid4())    
-    resume_text = request.json.get("resume_text")    
+    # create random unique resumeid
+    resume_id = str(uuid.uuid4())
+    resume_text = request.json.get("resume_text")
     doc = process_resume(resume_text)
     resume_data = {"parsed_resume": doc, "resumeID": resume_id, }
     collection.insert_one(resume_data)
-    #resume text will be returned and stored 
+    # resume text will be returned and stored
 
-#read job excel file
+
+# read job excel file
 excel_file = "jobpostingsfinalcsv.xlsx"
 job_data_path = "../data/jobpostingsfinalcsv.xlsx"
 df_jobs = pd.read_excel(job_data_path, engine='openpyxl')
 
 
-#route for prediction
-@app.route('/predict_category_and_match', methods = ['GET'])
+# route for prediction
+@app.route('/predict_category_and_match', methods=['GET'])
 def predict_category():
     try:
         data = request.get_json()
@@ -98,12 +108,12 @@ def predict_category():
         predict_resume = resume_data.get('parsed_resume')
 
         input_data = {'inputs': predict_resume}
-        #call model for inference
+        # call model for inference
         response = predictor.predict(input_data)
         category_result = response
-        #match with job csv
+        # match with job csv
         match = df_jobs['Category'].str.string().str.lower() == str(category_result)
-        matches = df_jobs[match] 
+        matches = df_jobs[match]
         match_list = matches.to_dict(orient='records')
 
         return jsonify({'predicted_category': category_result, 'job_recommendations': match_list})
@@ -112,7 +122,10 @@ def predict_category():
         app.logger.error(f"Error during predicting: {e}")
         return jsonify({'error': "Error occured!"}), 500
 
-#run flask
-if __name__ == '__main__':
-    app.run(debug=True)
 
+# run flask
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
+    print("Registered routes:")
+    for rule in app.url_map.iter_rules():
+        print(rule)
