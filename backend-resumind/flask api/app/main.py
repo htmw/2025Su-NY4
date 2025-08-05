@@ -116,14 +116,14 @@ def predict_category():
         input_data = {'inputs': predict_resume}
         # call model for inference
         response = predictor.predict(input_data)
+        
         #get label (category as string)
         category_result = response[0]['label']
         # match with job csv
-        match = df_jobs['Category'].str.string().str.lower() == str(category_result)
-        matches = df_jobs[match]
-        match_list = matches.to_dict(orient='records')
-
-        return jsonify({'predicted_category': category_result, 'job_recommendations': match_list})
+        match_df = df_jobs.loc[df_jobs['Category'] == category_result]
+        match_list = match_df.to_dict(orient='records')
+        
+        return jsonify(match_list)
 
     except Exception as e:
         app.logger.error(f"Error during predicting: {e}")
@@ -136,6 +136,7 @@ if __name__ == '__main__':
     print("Registered routes:")
     for rule in app.url_map.iter_rules():
         print(rule)
+
 
 
 
