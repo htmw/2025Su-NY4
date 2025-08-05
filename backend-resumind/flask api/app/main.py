@@ -24,6 +24,12 @@ client = MongoClient('mongodb://localhost:27017/')
 db = client.get_database('resume_db')
 collection = db['data']
 
+#temp storage folder
+UPLOAD_FOLDER = 'temp_storage'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
 # load spacy model
 try:
     nlp = spacy.load("en_core_web_sm")
@@ -68,8 +74,8 @@ def handle_process_resume():
 
     if file:
         filename = secure_filename(file.filename)
-        #       file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        #      file.save(file_path)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
 
         resume_text = ""
         if filename.lower().endswith('.pdf'):
@@ -85,7 +91,7 @@ def handle_process_resume():
     # create random unique resumeid
     resume_id = str(uuid.uuid4())
     resume_text = request.json.get("resume_text")
-    doc = process_resume(resume_text)
+    doc = preprocessing_module.process(resume_text)
     resume_data = {"parsed_resume": doc, "resumeID": resume_id, }
     collection.insert_one(resume_data)
     # resume text will be returned and stored
@@ -129,3 +135,4 @@ if __name__ == '__main__':
     print("Registered routes:")
     for rule in app.url_map.iter_rules():
         print(rule)
+
