@@ -24,7 +24,7 @@ client = MongoClient('mongodb://localhost:27017/')
 db = client.get_database('resume_db')
 collection = db['data']
 
-#temp storage folder
+# temp storage folder
 UPLOAD_FOLDER = 'temp_storage'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 if not os.path.exists(UPLOAD_FOLDER):
@@ -80,14 +80,14 @@ def handle_process_resume():
         resume_text = ""
         if filename.lower().endswith('.pdf'):
             resume_text = preprocessing_module.get_pdf_text(file_path)
-        elif filename.lower.endswith('.docx'):
+        elif filename.lower().endswith('.docx'):
             resume_text = preprocessing_module.get_docx_text(file_path)
         else:
             return jsonify({"Error": "Unsupported file type. Please upload either PDF or DOCX format."}), 400
 
         os.remove(file_path)
 
-        return jsonify({resume_text}), 200
+        return jsonify({"resume_text": resume_text}), 200
     # create random unique resumeid
     resume_id = str(uuid.uuid4())
     resume_text = request.json.get("resume_text")
@@ -116,13 +116,13 @@ def predict_category():
         input_data = {'inputs': predict_resume}
         # call model for inference
         response = predictor.predict(input_data)
-        
-        #get label (category as string)
+
+        # get label (category as string)
         category_result = response[0]['label']
         # match with job csv
         match_df = df_jobs.loc[df_jobs['Category'] == category_result]
         match_list = match_df.to_dict(orient='records')
-        
+
         return jsonify(match_list)
 
     except Exception as e:
