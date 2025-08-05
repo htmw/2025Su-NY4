@@ -51,7 +51,7 @@ def process(text):
 def get_keyphrases(text):
   key_phrases = []
   doc = nlp(text)
-  for chunk in spacy_doc.noun_chunks:
+  for chunk in doc.noun_chunks:
     key_phrases.append(chunk.text)
   return key_phrases
 
