@@ -116,7 +116,8 @@ def predict_category():
         input_data = {'inputs': predict_resume}
         # call model for inference
         response = predictor.predict(input_data)
-        category_result = response
+        #get label (category as string)
+        category_result = response[0]['label']
         # match with job csv
         match = df_jobs['Category'].str.string().str.lower() == str(category_result)
         matches = df_jobs[match]
@@ -135,5 +136,6 @@ if __name__ == '__main__':
     print("Registered routes:")
     for rule in app.url_map.iter_rules():
         print(rule)
+
 
 
