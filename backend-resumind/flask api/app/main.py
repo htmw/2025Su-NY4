@@ -104,7 +104,7 @@ df_jobs = pd.read_excel(job_data_path, engine='openpyxl')
 
 
 # route for prediction
-@app.route('/predict_category_and_match', methods=['GET'])
+@app.route('/job-recommendations', methods=['GET'])
 def predict_category():
     try:
         data = request.get_json()
@@ -135,4 +135,5 @@ if __name__ == '__main__':
     print("Registered routes:")
     for rule in app.url_map.iter_rules():
         print(rule)
+
 
