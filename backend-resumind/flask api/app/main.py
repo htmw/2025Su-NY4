@@ -104,6 +104,7 @@ def handle_process_resume():
 excel_file = "jobpostingsfinalcsv.xlsx"
 job_data_path = "../data/jobpostingsfinalcsv.xlsx"
 df_jobs = pd.read_excel(job_data_path, engine='openpyxl')
+df_jobs['Category'] = df_jobs['Category'].astype('string')
 
 
 # route for prediction
@@ -122,7 +123,6 @@ def predict_category():
 
         # get label (category as string)
         category_result = response[0]['label']
-        df_jobs['Category'] = df_jobs['Category'].astype(str)
         # match with job csv
         match_df = df_jobs.loc[df_jobs['Category'] == category_result]
         match_list = match_df.to_dict(orient='records')
@@ -140,6 +140,7 @@ if __name__ == '__main__':
     print("Registered routes:")
     for rule in app.url_map.iter_rules():
         print(rule)
+
 
 
 
