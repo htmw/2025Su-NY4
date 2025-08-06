@@ -8,15 +8,7 @@ from werkzeug.utils import secure_filename
 import preprocessing_module as preprocessing_module
 import boto3, sagemaker
 from sagemaker.huggingface import HuggingFaceModel
-
-print("THIS IS THE RIGHT FILE.")
-
 app = Flask(__name__)
-# app.run(host='0.0.0.0', port=5000, debug=True)
-
-# print("Registered routes:")
-# for rule in app.url_map.iter_rules():
-#    print(rule)
 
 
 # mongodb connection
@@ -59,10 +51,12 @@ huggingface_model = HuggingFaceModel(
 
 
 # deploy model to SageMaker Inference
-# predictor = huggingface_model.deploy(
-#	initial_instance_count=1, # number of instances
-#	instance_type='ml.t2.medium' # ec2 instance type
-# )
+print("Deploying model to SageMaker...")
+predictor = huggingface_model.deploy(
+	initial_instance_count=1, # number of instances
+	instance_type='ml.t2.medium' # ec2 instance type
+)
+print("Model deployment successful")
 
 # process resume
 @app.route('/process-resume', methods=['POST'])
@@ -77,24 +71,31 @@ def handle_process_resume():
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
 
-        resume_text = ""
+        # Get resume text
         if filename.lower().endswith('.pdf'):
             resume_text = preprocessing_module.get_pdf_text(file_path)
         elif filename.lower().endswith('.docx'):
             resume_text = preprocessing_module.get_docx_text(file_path)
         else:
-            return jsonify({"Error": "Unsupported file type. Please upload either PDF or DOCX format."}), 400
+            return jsonify({"error": "Unsupported file type. Please upload either PDF or DOCX format."}), 400
 
         os.remove(file_path)
 
-        return jsonify({"resume_text": resume_text}), 200
-    # create random unique resumeid
-    resume_id = str(uuid.uuid4())
-    resume_text = request.json.get("resume_text")
-    doc = preprocessing_module.process(resume_text)
-    resume_data = {"parsed_resume": doc, "resumeID": resume_id, }
-    collection.insert_one(resume_data)
-    # resume text will be returned and stored
+        # Generate resume ID and process
+        resume_id = str(uuid.uuid4())
+        doc = preprocessing_module.process(resume_text)
+        resume_data = {
+            "parsed_resume": doc,
+            "resumeID": resume_id
+        }
+
+        collection.insert_one(resume_data)
+
+        return jsonify({
+            "resume_text": resume_text,
+            "resumeID": resume_id,
+            "parsed_resume": doc
+        }), 200
 
 
 # read job excel file
@@ -110,7 +111,7 @@ def predict_category():
         data = request.get_json()
         resumeID = data.get('resumeID')
 
-        resume_data = collection.find_one({'_id': resumeID})
+        resume_data = collection.find_one({'resumeID': resumeID})
         predict_resume = resume_data.get('parsed_resume')
 
         input_data = {'inputs': predict_resume}
