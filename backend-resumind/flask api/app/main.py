@@ -120,9 +120,9 @@ def predict_category():
 
         # get label (category as string)
         category_result = response[0]['label']
-	category_result_string = str(category_result)
+	df_jobs['Category'] = df_jobs['Category'].astype(str)
         # match with job csv
-        match_df = df_jobs.loc[df_jobs['Category'] == category_result_string]
+        match_df = df_jobs.loc[df_jobs['Category'] == category_result]
         match_list = match_df.to_dict(orient='records')
 
         return jsonify(match_list)
@@ -138,6 +138,7 @@ if __name__ == '__main__':
     print("Registered routes:")
     for rule in app.url_map.iter_rules():
         print(rule)
+
 
 
 
