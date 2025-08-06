@@ -7,7 +7,8 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import preprocessing_module as preprocessing_module
 import boto3, sagemaker
-from sagemaker.huggingface import HuggingFaceModel
+from sagemaker.huggingface import HuggingFaceModel, HuggingFacePredictor
+
 app = Flask(__name__)
 
 
@@ -52,10 +53,11 @@ huggingface_model = HuggingFaceModel(
 
 # deploy model to SageMaker Inference
 print("Deploying model to SageMaker...")
-predictor = huggingface_model.deploy(
-	initial_instance_count=1, # number of instances
-	instance_type='ml.t2.medium' # ec2 instance type
-)
+#predictor = huggingface_model.deploy(
+#	initial_instance_count=1, # number of instances
+#	instance_type='ml.t2.medium' # ec2 instance type
+#)
+predictor = HuggingFacePredictor(endpoint_name='huggingface-pytorch-inference-2025-08-06-00-00-55-611')
 print("Model deployment successful")
 
 # process resume
@@ -120,7 +122,7 @@ def predict_category():
 
         # get label (category as string)
         category_result = response[0]['label']
-	df_jobs['Category'] = df_jobs['Category'].astype(str)
+        df_jobs['Category'] = df_jobs['Category'].astype(str)
         # match with job csv
         match_df = df_jobs.loc[df_jobs['Category'] == category_result]
         match_list = match_df.to_dict(orient='records')
