@@ -59,11 +59,10 @@ df_jobs['Category'] = df_jobs['Category'].astype('string')
 
 # deploy model to SageMaker Inference
 print("Deploying model to SageMaker...")
-#predictor = huggingface_model.deploy(
-#	initial_instance_count=1, # number of instances
-#	instance_type='ml.t2.medium' # ec2 instance type
-#)
-predictor = HuggingFacePredictor(endpoint_name='huggingface-pytorch-inference-2025-08-06-00-00-55-611')
+predictor = huggingface_model.deploy(
+	initial_instance_count=1, # number of instances
+	instance_type='ml.t2.medium' # ec2 instance type
+)
 print("Model deployment successful")
 
 # process resume
