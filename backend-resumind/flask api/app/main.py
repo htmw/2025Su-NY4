@@ -50,6 +50,12 @@ huggingface_model = HuggingFaceModel(
     role=role,
 )
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+job_data_path = os.path.join(BASE_DIR, '../data/jobpostingsfinalcsv.csv')
+
+df_jobs = pd.read_csv(job_data_path)
+df_jobs['Category'] = df_jobs['Category'].astype('string')
+
 
 # deploy model to SageMaker Inference
 print("Deploying model to SageMaker...")
@@ -100,13 +106,6 @@ def handle_process_resume():
         }), 200
 
 
-# read job excel file
-excel_file = "jobpostingsfinalcsv.xlsx"
-job_data_path = "../data/jobpostingsfinalcsv.xlsx"
-df_jobs = pd.read_excel(job_data_path, engine='openpyxl')
-df_jobs['Category'] = df_jobs['Category'].astype('string')
-
-
 # route for prediction
 @app.route('/job-recommendations', methods=['GET'])
 def predict_category():
@@ -140,10 +139,3 @@ if __name__ == '__main__':
     print("Registered routes:")
     for rule in app.url_map.iter_rules():
         print(rule)
-
-
-
-
-
-
-
