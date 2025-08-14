@@ -1,78 +1,157 @@
-import React, { useState } from 'react';
-import SwipeableCard from './SwipeableCard';
-import { Box, Typography, Button, List, ListItem, ListItemText, AppBar, Toolbar, Avatar, IconButton } from '@mui/material';
-import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
-import CardMedia from '@mui/material/CardMedia';
-import CardContent from '@mui/material/CardContent';
-import CardActions from '@mui/material/CardActions';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import ShareIcon from '@mui/icons-material/Share';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { useState, useEffect } from 'react';
+import { Typography, IconButton } from '@mui/material';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import ThumbDownIcon from '@mui/icons-material/ThumbDown';
+import { motion } from 'framer-motion';
 
-const cardData = [
-  { id: 1, title: 'Frontend Developer at Meta' },
-  { id: 2, title: 'Full Stack Role at Google' },
-  { id: 3, title: 'Software Engineer at Netflix' },
-  { id: 4, title: 'React Intern at Shopify' },
-];
+const getSwipedLeftJobs = () => {
+  const stored = localStorage.getItem('swipedLeftJobs');
+  return stored ? JSON.parse(stored) : [];
+};
 
+const saveSwipedLeftJob = (jobId) => {
+  const current = getSwipedLeftJobs();
+  if (!current.includes(jobId)) {
+    const updated = [...current, jobId];
+    localStorage.setItem('swipedLeftJobs', JSON.stringify(updated));
+  }
+};
 
-const CardDeck = ({ onMatch }) => {
-  const [cards, setCards] = useState(cardData);
-  const [liked, setLiked] = useState([]);
+const CardDeck = ({ onMatch = () => {}, matchedJobs = [], jobData = [] }) => {
+  const [cards, setCards] = useState(() => {
+    const swipedLeft = getSwipedLeftJobs();
+    return jobData.filter(
+      (job) =>
+        !matchedJobs.some((match) => Number(match.id) === Number(job.id)) &&
+        !swipedLeft.includes(Number(job.id))
+    );
+  });
 
-  const handleSwipe = (direction, index) => {
-    const swiped = cards[index];
+  useEffect(() => {
+    const swipedLeft = getSwipedLeftJobs();
+    setCards(
+      jobData.filter(
+        (job) =>
+          !matchedJobs.some((match) => Number(match.id) === Number(job.id)) &&
+          !swipedLeft.includes(Number(job.id))
+      )
+    );
+  }, [jobData, matchedJobs]);
+
+  const handleAction = (direction) => {
+    const currentCard = cards[0];
+    if (!currentCard) return;
+
     if (direction === 'right') {
-      onMatch(swiped);
+      onMatch({ ...currentCard, match: '90%', likelihood: 'High' });
+      console.log(`Matched with: ${currentCard.title}`);
     }
-    setCards((prev) => prev.filter((_, i) => i !== index));
+
+    if (direction === 'left') {
+      saveSwipedLeftJob(Number(currentCard.id));
+    }
+
+    // Remove the matched card directly from the state
+    setCards((prev) => prev.filter((card, idx) => idx !== 0));
   };
 
   return (
-    <div className="deck-layout">
-      <Box sx={{ width: '65%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <Typography variant="h4" gutterBottom>Jobs</Typography>
-        <Box sx={{ width: 320, height: 440, position: 'relative' }}>
-          {cards.map((card, i) => (
-            <SwipeableCard key={card.id} index={i} onSwipe={handleSwipe}>
-              <Card sx={{ maxWidth: 320, position: 'absolute' }}>
-                <CardHeader
-                  avatar={<Avatar sx={{ bgcolor: 'primary.main' }}>{card.title[0]}</Avatar>}
-                  title={card.title}
-                  subheader={card.city || 'Available Now'}
-                  action={
-                    <IconButton>
-                      <MoreVertIcon />
-                    </IconButton>
-                  }
-                />
-                <CardMedia
-                  component="img"
-                  height="140"
-                  image="https://source.unsplash.com/random/320x140?job"
-                  alt="Job visual"
-                />
-                <CardContent>
-                  <Typography variant="body2" color="text.secondary">
-                    {card.desc || 'Explore this opportunity at a top-tier company with great culture and growth.'}
-                  </Typography>
-                </CardContent>
-                <CardActions disableSpacing>
-                  <IconButton>
-                    <FavoriteIcon />
-                  </IconButton>
-                  <IconButton>
-                    <ShareIcon />
-                  </IconButton>
-                </CardActions>
-              </Card>
-            </SwipeableCard>
-          ))}
-        </Box>
-      </Box>
-    </div>
+    <>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'start',
+        height: '100vh',
+        padding: '2rem',
+        boxSizing: 'border-box',
+        width: '100%',
+      }}>
+      {cards.length > 0 ? (
+        <>
+          <Typography variant="h4" gutterBottom align="center">Jobs</Typography>
+          <Typography variant="subtitle1" color="text.secondary" align="center" fontStyle={'italic'} sx={{ mb: 4 }}>Swipe left to reject, right to match</Typography>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+            <div style={{ position: 'relative', width: '500px', height: '250px', margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              {cards.map((card, index) => (
+                <motion.div
+                  key={card.id}
+                  drag={index === 0 ? 'x' : false}
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={1}
+                  onDragEnd={(event, info) => {
+                    if (index === 0) {
+                      if (info.offset.x < -100) handleAction('left');
+                      else if (info.offset.x > 100) handleAction('right');
+                    }
+                  }}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    backgroundColor: 'white',
+                    border: '1px solid #ddd',
+                    width: '500px',
+                    height: '100%',
+                    borderRadius: 16,
+                    boxShadow: '0 2px 10px rgba(76, 76, 76, 0.2)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '24px',
+                    textAlign: 'center',
+                    cursor: index === 0 ? 'grab' : 'default',
+                    zIndex: cards.length - index,
+                  }}
+                >
+                  <Typography variant="subtitle2" color="primary">Job Opportunity</Typography>
+                  <Typography variant="h6" sx={{ mt: 1 }}>{card.title}</Typography>
+                  <div style={{
+                    marginTop: '8px',
+                    fontSize: '14px',
+                    color: 'rgba(0, 0, 0, 0.6)',
+                    height: '80px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}>
+                    {card.description || 'Explore this opportunity at a top-tier company with great culture and growth.'}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: '2rem', marginTop: '80px', justifyContent: 'center' }}>
+              <IconButton
+                sx={{
+                  backgroundColor: '#fff',
+                  borderRadius: '50%',
+                  boxShadow: 3,
+                  width: 60,
+                  height: 60,
+                }}
+                onClick={() => handleAction('left')}
+              >
+                <ThumbDownIcon color="error" />
+              </IconButton>
+              <IconButton
+                sx={{
+                  backgroundColor: '#fff',
+                  borderRadius: '50%',
+                  boxShadow: 3,
+                  width: 60,
+                  height: 60,
+                }}
+                onClick={() => handleAction('right')}
+              >
+                <ThumbUpIcon color="success" />
+              </IconButton>
+            </div>
+          </div>
+        </>
+      ) : (
+        <Typography variant="h6">No more jobs to show!</Typography>
+      )}
+      </div>
+    </>
   );
 };
 
