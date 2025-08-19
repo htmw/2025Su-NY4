@@ -23,7 +23,7 @@ const SwipingPage = () => {
       }
 
       try {
-        const response = await fetch('http://ec2-3-88-192-168.compute-1.amazonaws.com:5000/job-recommendations', {
+        const response = await fetch('http://ec2-44-204-41-151.compute-1.amazonaws.com:5000/job-recommendations', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

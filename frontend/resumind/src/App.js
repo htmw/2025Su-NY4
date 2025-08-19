@@ -18,7 +18,7 @@ function App() {
     formData.append('file', file);
 
     try {
-      const response = await fetch('http://ec2-13-219-80-203.compute-1.amazonaws.com:5000/process-resume', {
+      const response = await fetch('http://ec2-44-204-41-151.compute-1.amazonaws.com:5000/process-resume', {
         method: 'POST',
         body: formData,
       });
